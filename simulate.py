@@ -1,3 +1,6 @@
+import time as zman
+t1=zman.time()
+import argparse
 from population import Mutation, MutationalProcess, Population
 from collections import defaultdict, namedtuple
 from statWriter import statWriter
@@ -20,20 +23,31 @@ import os
 # stdZs         :   expected genetic variance - E(a^2 pq/2)
 
 
+parser = argparse.ArgumentParser(description='Simulate population')
+parser.add_argument('--n', type=int,help="no. of traits",default=1)
+parser.add_argument('--N', type=int,help="population size",default=1000)
+parser.add_argument('--w', type=float,help="selection strength",default=1.0)
+parser.add_argument('--U', type=float,help="mutation rate",default=0.01)
+parser.add_argument('--shape', type=float,help="shape",default=1.0)
+parser.add_argument('--biases', type=float,help="biases",default=[0], nargs='+')
+parser.add_argument('--scale', type=float,help="scale",default=10)
 
+
+args=parser.parse_args()
+
+print(args)
 
 # gather several statistics in one run
-for mutFact in [0.0]:
+for mutFact in args.biases:
     # set population with specific mutational and demographic parameters
-    N       = 1000
-    w       = 1.0
-    shape   = float(sys.argv[1])
-    scale   = float(sys.argv[2])
-    n=int(sys.argv[3])
-    u       = float(sys.argv[4]) 
-
+    N       = args.N
+    w       = args.w
+    u       = args.U
+    n       = args.n  
+    shape   = args.shape
+    scale   = args.scale
     mu = MutationalProcess(u, shape, scale)
-    bias=0.0
+    bias=mutFact
 
     
     fitness = 'parents'
@@ -50,17 +64,17 @@ for mutFact in [0.0]:
     #/Users/ybs2103/PhD/Python/Adaptation/Results/
     #/ifs/data/c2b2/gs_lab/shared/ybs2103/Adaptation/results/
 
-    f = statWriter(os.getcwd()+'/results',N=N,mu=mu,n=n,w=w,fitness=fitness,burnTime=burnTime,respTime=respTime,shift=shift,ver=ver,bias=bias)
+    f = statWriter(os.getcwd()+'/results'+str(N),N=N,mu=mu,n=n,w=w,fitness=fitness,burnTime=burnTime,respTime=respTime,shift=shift,ver=ver,bias=bias)
     sc = 1.0 / float(2*N)
     
-    print os.getcwd()+'/results'
+    print(os.getcwd()+'/results')
 
-    sampleTimes = set(range(0,11*N,N/2))
+    sampleTimes = set(list(range(0,11*N,N//2)))
 
-    # we advance a total of 10*N+3 generations 
-    for time in xrange(burnTime+respTime):
+    # we advance a total of 20*N generations 
+    for time in range(burnTime+respTime):
         
-        if (time % (N/100))==0:
+        if (time % (N/10))==0:
             print("Generation no. " + str(time) + " is " + str(time/(N/10.0)) + "%")
 
         # advance one generation
@@ -72,14 +86,12 @@ for mutFact in [0.0]:
         
         # once and then, we collect statistics
         if time in sampleTimes:
-            print time
+            print(time)
 
             meanF, stdF = pop.meanFitness()
             f.write('meanF',time,meanF)
             f.write('stdF',time,stdF)
-
             f.write('pheV',time,pop.pheVariance())
-            
             seg = pop.segregating()
             f.write('numSeg',time,len(seg))
             
@@ -94,7 +106,6 @@ for mutFact in [0.0]:
                 phenos=pop.phenotypes()
                 for phe in  phenos:
                     f.write('pheList',phe)
-
                 #for pheno in pop.denovo:
                 #    f.write('denovo',pheno) 
             for mut in seg:
@@ -108,7 +119,11 @@ for mutFact in [0.0]:
 
             f.write('meanZ',time,pop.zf+meanZs)
             f.write('stdZs',time,np.sqrt(vsites))
-
+            f.write('meanZ',time,pop.zf+meanZs)
+            
+            f.write('realTime',time, (zman.time()-t1)/3600)
+            
+            f.flush()
 
                     
                 

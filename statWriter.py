@@ -63,6 +63,10 @@ class statWriter(object):
         return res[:-1]
 
     def closeWriters(self):
-        for _,w in self._writers.iteritems():
+        for _,w in iter(self._writers.items()):
             w.close()
             
+
+    def flush(self):
+        for key in self._writers:
+            self._writers[key].flush()
