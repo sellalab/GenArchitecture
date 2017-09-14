@@ -24,7 +24,7 @@ import os
 # skewZ         :   third moment of the phenotypic distribution
 
 parser = argparse.ArgumentParser(description='Simulate population')
-parser.add_argument('--n', type=int,help="no. of traits",default=1)
+parser.add_argument('--n', type=int,help="no. of traits",default=1) #keep n=1. MultiD not implemented
 parser.add_argument('--N', type=int,help="population size",default=1000)
 parser.add_argument('--w', type=float,help="selection strength",default=1.0)
 parser.add_argument('--U', type=float,help="mutation rate",default=0.01)
@@ -35,7 +35,7 @@ parser.add_argument('--pweak', type=float,help="fraction weakly selected",defaul
 
 args=parser.parse_args()
 
-print args
+print(args)
 
 
 # gather several statistics in one run
@@ -43,7 +43,8 @@ for mutFact in args.biases:
     # set population with specific mutational and demographic parameters
     N       = args.N
     w       = args.w
-    u       = args.U 
+    u       = args.U
+    n       = args.n 
     shape   = args.shape
     scale   = args.scale
     mu = MutationalProcess(u, shape, scale)
@@ -58,21 +59,21 @@ for mutFact in args.biases:
    
      
  
-    ver = '2.2.11'
-    # 2.2.10  Mutation pressu
+    ver = '2.2.14'
+    # 2.2.14  Mutation pressu
     #/Users/ybs2103/PhD/Python/Adaptation/Results/
     #/ifs/data/c2b2/gs_lab/shared/ybs2103/Adaptation/results/
 
-    f = statWriter(os.getcwd()+'/results',N=N,mu=mu,w=w,fitness=fitness,burnTime=burnTime,respTime=respTime,shift=shift,ver=ver,bias=bias)
+    f = statWriter(os.getcwd()+'/results',N=N,mu=mu,w=w,fitness=fitness,burnTime=burnTime,respTime=respTime,shift=shift,ver=ver,bias=bias,pweak=args.pweak)
     sc = 1.0 / float(2*N)
        
-    sampleTimes = set(range(0,10000,1000)+range(10000,20001,100))
+    sampleTimes = set(list(range(0,10000,1000))+list(range(10000,20001,1000)))
 
     # we advance a total of 10*N+10000 generations 
-    for time in xrange(burnTime+respTime):
+    for time in range(burnTime+respTime):
         
         if (time % 100)==0:
-            print time
+            print(time)
 
         # advance one generation
         pop.nextGen()
@@ -83,6 +84,9 @@ for mutFact in args.biases:
         
         # once and then, we collect statistics
         if time in sampleTimes:
+            print(time)
+            f.write('test',1.0,2.0)
+
             meanF, stdF = pop.meanFitness()
             f.write('meanF',time,meanF)
             f.write('stdF',time,stdF)
@@ -113,7 +117,7 @@ for mutFact in args.biases:
                 meanZs+= p*mut.phenoSize
                 vsites+= 0.5*(mut.phenoSize**2)*p*q
                 if time==20000:
-                    f.write('segList',mut.phenoSize, float(mut.frequency) * sc)
+                    f.write('segList',mut.phenoSize, float(mut.frequency) * sc,mut.ES)
                     
 
             f.write('meanZ',time,np.mean(phenos))
@@ -122,7 +126,6 @@ for mutFact in args.biases:
             f.write('stdZs',time,sqrt(vsites))
             f.write('skewZ',time,moment(phenos,3))
 
-                    
                     
                 
                 

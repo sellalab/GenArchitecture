@@ -5,12 +5,13 @@ import numpy as np
 
 # Container class for mutations.
 class Mutation(object):
-    def __init__(self, scaledSize, phenoSize):
+    def __init__(self, scaledSize, phenoSize,ES):
         self.scaledSize = scaledSize
         self.phenoSize  = phenoSize
         self.frequency  = 1
         self.frozenFreq = -1 # start undefined
         self.index      = -1 # start undefined
+        self.ES      =    ES
             
 
 # parameters for the mutational process
@@ -39,10 +40,10 @@ class Population(object):
         # self._individuals[i] is a dictionary representing the genotype of individual i in the population:
         #   - The keys are mutations present in the individual
         #   - Values are the ploidity of the mutation (either 1 or 2)
-        self._individuals = [defaultdict(int) for _ in xrange(self.N)]
+        self._individuals = [defaultdict(int) for _ in range(self.N)]
         
         # same data structure as self._individuals is used as a temporary data-structure when constructing next generation
-        self._offspring = [defaultdict(int) for _ in xrange(self.N)]
+        self._offspring = [defaultdict(int) for _ in range(self.N)]
                 
         # total fitness effect of fixed mutations in the population
         self.zf = 0.0
@@ -125,7 +126,7 @@ class Population(object):
         
         # update counts
         for indv in self._individuals:
-            for mu,ploidity in indv.iteritems():
+            for mu,ploidity in iter(indv.items()):
                 mu.frequency+= ploidity
                 
         # iterate over segregating mutation list and search for extinct or fixed mutations
@@ -165,7 +166,7 @@ class Population(object):
         z = 0.0
         
         # sum the effect of segregating mutations 
-        for mu,ploidity in indv.iteritems():
+        for mu,ploidity in iter(indv.items()):
             z+= (ploidity*mu.phenoSize)
             
         # add the effect of fixed mutations, and substract the optimal value
@@ -174,14 +175,14 @@ class Population(object):
         return z
     
     def phenotypes(self):
-        return [self._phenotype(self._individuals[i]) for i in xrange(self.N)]
+        return [self._phenotype(self._individuals[i]) for i in range(self.N)]
 
     # sample self._offspring, based on parents fitness
     def _sampleOffspringByParentsFitness(self):
         
         # we will sample parents with probabilities proportional to their fitness.
         # first, we compute the fitness
-        fitVals = [self._fitness(self._individuals[i]) for i in xrange(self.N)]
+        fitVals = [self._fitness(self._individuals[i]) for i in range(self.N)]
         # we normalize to a probability vector and compute the CDF.
         tmp = 1.0 / np.sum(fitVals)
         cdf = np.add.accumulate([x*tmp for x in fitVals])
@@ -199,12 +200,12 @@ class Population(object):
     
     # return the mean fitness oand std f the population
     def meanFitness(self):
-        fit = np.array([self._fitness(self._individuals[i]) for i in xrange(self.N)])
+        fit = np.array([self._fitness(self._individuals[i]) for i in range(self.N)])
         return np.mean(fit), np.std(fit) 
 
     # phenotypic variance
     def pheVariance(self):
-        phe = np.array([self._phenotype(self._individuals[i]) for i in xrange(self.N)])
+        phe = np.array([self._phenotype(self._individuals[i]) for i in range(self.N)])
         return np.var(phe)
 
 
@@ -240,7 +241,7 @@ class Population(object):
         for p in [p1, p2]:
             
             # for each mutation carried by the parent
-            for mu,ploidity in p.iteritems():
+            for mu,ploidity in iter(p.items()):
                 
                 # if the parent has two copies of the mutation he is bound to pass it on
                 if ploidity == 2:
@@ -254,13 +255,15 @@ class Population(object):
 
         # add random de-novo mutations:
         # number of de-novo mutations is a poisson variable
-        for _ in xrange(np.random.poisson(2.0*self._mu.mu)):
+        for _ in range(np.random.poisson(2.0*self._mu.mu)):
             
             # the scaled effect size has gamma distribution
             if random.random()>self.pweak:
                 scaledSize = np.random.gamma(self._mu.shape,50.0/self._mu.shape)
+                ES=50.0
             else:
-                scaledSize = np.random.gamma(self._mu.shape,0.1/self._mu.shape)    
+                scaledSize = np.random.gamma(self._mu.shape,0.1/self._mu.shape)
+                ES=0.1
             phenoSize  = math.sqrt(self._muScalingCoef*scaledSize)
             
             # and its sign is a uniform Bernouli variable
@@ -272,7 +275,7 @@ class Population(object):
             #self.denovo.add(phenoSize)
 
             # we add the mutation to the segregating list and to the new offspring (in heterozygous state)
-            mu = Mutation(scaledSize,phenoSize)
+            mu = Mutation(scaledSize,phenoSize,ES)
             self._segregating.add(mu)
             child[mu] = 1
     
