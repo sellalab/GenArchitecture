@@ -1,5 +1,4 @@
 from collections import Sequence
-from collections import Iterable
 from random import getrandbits
 from datetime import datetime
 import os
@@ -42,7 +41,7 @@ class statWriter(object):
             if not os.path.exists(dirKey):
                 os.makedirs(dirKey)
             # create writer
-            self._writers[key] = open(dirKey + self._runID + '.csv','w')
+            self._writers[key] = open(dirKey + key + self._runID + '.csv','w')
         
         # convert values to string and write to file. 
         self._writers[key].write(self._recuToStr(vals) + '\n')
@@ -56,8 +55,6 @@ class statWriter(object):
         for x in inp:
             if isinstance(x,Sequence):
                 res+= self._recuToStr(x) + ','
-            elif isinstance(x, Iterable):
-                res+= ','.join(map(str, x)) + ','
             else:
                 res+= str(x) + ','
         return res[:-1]

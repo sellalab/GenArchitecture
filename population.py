@@ -21,13 +21,13 @@ MutationalProcess = namedtuple('MutationalProcess', 'mu shape scale')
 class Population(object):
     
     #   N : population size
-    def __init__(self, N, w, mu, n, selectionMode):
+    def __init__(self, N, w, mu, selectionMode, pweak):
+
+        # prportion weak
+        self.pweak = pweak
         
         # population size
         self.N = N
-
-        # dimensionality
-        self.n = n        
         
         # set of segregating mutations
         self._segregating = set()
@@ -45,16 +45,16 @@ class Population(object):
         self._offspring = [defaultdict(int) for _ in xrange(self.N)]
                 
         # total fitness effect of fixed mutations in the population
-        self.zf = np.zeros(n)
+        self.zf = 0.0
         
         # initialize fitness optimum as zero
-        self._fitnessOptimum = np.zeros(n)
+        self._fitnessOptimum = 0.0
         
         # selection model paramter
         self._fitnesscoef = 0.5/float(w*w)
         
         # mutation scaling parameter
-        self._muScalingCoef = 2.0*float(w*w)/float(n*N)
+        self._muScalingCoef = 2.0*float(w*w)/float(N)
         
         # mutational process parameters
         self._mu = mu
@@ -156,7 +156,7 @@ class Population(object):
         
         z = self._phenotype(indv)  - self._fitnessOptimum
         
-        return math.exp(-np.dot(z,z)*self._fitnesscoef)
+        return math.exp(-z*z*self._fitnesscoef)
 
 
     # get phenotype
@@ -205,7 +205,7 @@ class Population(object):
     # phenotypic variance
     def pheVariance(self):
         phe = np.array([self._phenotype(self._individuals[i]) for i in xrange(self.N)])
-        return np.var(phe,axis=0)
+        return np.var(phe)
 
 
   
@@ -257,9 +257,11 @@ class Population(object):
         for _ in xrange(np.random.poisson(2.0*self._mu.mu)):
             
             # the scaled effect size has gamma distribution
-            scaledSize = np.random.gamma(self._mu.shape, self._mu.scale)
-            v=np.random.multivariate_normal(np.zeros(self.n),np.identity(self.n))
-            phenoSize  = v*math.sqrt(self._muScalingCoef*scaledSize/np.dot(v,v))
+            if random.random()>self.pweak:
+                scaledSize = np.random.gamma(self._mu.shape,50.0/self._mu.shape)
+            else:
+                scaledSize = np.random.gamma(self._mu.shape,0.1/self._mu.shape)    
+            phenoSize  = math.sqrt(self._muScalingCoef*scaledSize)
             
             # and its sign is a uniform Bernouli variable
             if random.random()>(0.5*(1+self._bias)):

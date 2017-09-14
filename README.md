@@ -1,9 +1,10 @@
 # GenArchitecture
 ### This is the code for the polygenic trait simulations from Simons et al (2017).
 ### Running:
-python simulate.py k Es n U  
-Program expects 4 parameters - the shape and scale parameters of the distribution of scaled selection coefficients, the number of dimensions and the mutation rate per haploid genome.  
-The program consists of three files. simulate.py tuns the simulation, population.py includes classes for the population and mutations, and statWriter.py is a class for writing statistics to files.
+This version has multiple parameters and so uses Python’s argument parser.  
+Example: simulate.py —-U 3 —-shape 10 —biases [0 2] —scale 3 —pweak 0.5  
+Though it’s included as a parameter for future use, the number of traits has to be left as 1 since the multidimensional version is yet to be implemented.  
+The program consists of three files. simulate.py runs the simulation, population.py includes classes for the population and mutations, and statWriter.py is a class for writing statistics to files.
 
 ## Branches
 Branches provide variations on the main program. The main branch is the multidimensional version at equilibrium.
