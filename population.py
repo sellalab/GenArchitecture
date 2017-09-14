@@ -5,13 +5,12 @@ import numpy as np
 
 # Container class for mutations.
 class Mutation(object):
-    def __init__(self, scaledSize, phenoSize,ES):
+    def __init__(self, scaledSize, phenoSize):
         self.scaledSize = scaledSize
         self.phenoSize  = phenoSize
         self.frequency  = 1
         self.frozenFreq = -1 # start undefined
         self.index      = -1 # start undefined
-        self.ES      =    ES
             
 
 # parameters for the mutational process
@@ -22,13 +21,13 @@ MutationalProcess = namedtuple('MutationalProcess', 'mu shape scale')
 class Population(object):
     
     #   N : population size
-    def __init__(self, N, w, mu, selectionMode, pweak):
-
-        # prportion weak
-        self.pweak = pweak
+    def __init__(self, N, w, mu, n, selectionMode):
         
         # population size
         self.N = N
+
+        # dimensionality
+        self.n = n        
         
         # set of segregating mutations
         self._segregating = set()
@@ -46,10 +45,10 @@ class Population(object):
         self._offspring = [defaultdict(int) for _ in range(self.N)]
                 
         # total fitness effect of fixed mutations in the population
-        self.zf = 0.0
+        self.zf = np.zeros(n)
         
         # initialize fitness optimum as zero
-        self._fitnessOptimum = 0.0
+        self._fitnessOptimum = np.zeros(n)
         
         # selection model paramter
         self._fitnesscoef = 0.5/float(w*w)
@@ -157,7 +156,7 @@ class Population(object):
         
         z = self._phenotype(indv)  - self._fitnessOptimum
         
-        return math.exp(-z*z*self._fitnesscoef)
+        return math.exp(-np.dot(z,z)*self._fitnesscoef)
 
 
     # get phenotype
@@ -206,7 +205,7 @@ class Population(object):
     # phenotypic variance
     def pheVariance(self):
         phe = np.array([self._phenotype(self._individuals[i]) for i in range(self.N)])
-        return np.var(phe)
+        return np.var(phe,axis=0)
 
 
   
@@ -258,13 +257,9 @@ class Population(object):
         for _ in range(np.random.poisson(2.0*self._mu.mu)):
             
             # the scaled effect size has gamma distribution
-            if random.random()>self.pweak:
-                scaledSize = np.random.gamma(self._mu.shape,50.0/self._mu.shape)
-                ES=50.0
-            else:
-                scaledSize = np.random.gamma(self._mu.shape,0.1/self._mu.shape)
-                ES=0.1
-            phenoSize  = math.sqrt(self._muScalingCoef*scaledSize)
+            scaledSize = np.random.gamma(self._mu.shape, self._mu.scale)
+            v=np.random.multivariate_normal(np.zeros(self.n),np.identity(self.n))
+            phenoSize  = v*math.sqrt(self._muScalingCoef*scaledSize/np.dot(v,v))
             
             # and its sign is a uniform Bernouli variable
             if random.random()>(0.5*(1+self._bias)):
@@ -275,7 +270,7 @@ class Population(object):
             #self.denovo.add(phenoSize)
 
             # we add the mutation to the segregating list and to the new offspring (in heterozygous state)
-            mu = Mutation(scaledSize,phenoSize,ES)
+            mu = Mutation(scaledSize,phenoSize)
             self._segregating.add(mu)
             child[mu] = 1
     
