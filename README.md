@@ -1,16 +1,25 @@
 # GenArchitecture
 ### This is the code for the polygenic trait simulations from Simons et al (2017).
 ### Running:
-This version has multiple parameters and so uses Python’s argument parser.  
-Example: simulate.py —-U 3 —-shape 10 —biases 0 0.2 —scale 3 —pweak 0.5  
-Though it’s included as a parameter for future use, the number of traits has to be left as 1 since the multidimensional version is yet to be implemented. Though the scale parameter still exists in the parser it isn't used. Instead, pweak determines which proportion of new mutation have E(S)=0.1 and which proportion has E(S)=50.
-The program consists of three files. simulate.py runs the simulation, population.py includes classes for the population and mutations, and statWriter.py is a class for writing statistics to files.
+Version for running analysis with mutational bias. Here, new mutations are either strongly selected with E(S)=50 or weakly selected with E(S)=0.1. Therefore, the scale parameter is ignored and we introduce a parameter for the proportion of weakly selected new mutations.  simulate.py runs the simulation, population.py includes classes for the population and mutations, and statWriter.py is a class for writing statistics to files.  
+The program can recieve the following parameters:  
+--n no. of traits (default=1)  
+--N population size (default=1000)  
+--w selection strength (default=1.0)  
+--U mutation rate per haplotype genome (default=0.01)  
+--shape shape of gamma distribution of scaled selection coefficients (default=1.0)  
+[ignored] --scale scale of gamma distribution of scaled selection coefficients (default=10.0)  
+--biases list of mutation biases to run (default=[0])  
+--pweak proportion of new mutations that are weakly selected   
+  
+Example: python simulate.py --n 10 --U 0.1 --biases 0 0.2 0.3 --pweak 0.3
 
 ## Branches
 Branches provide variations on the main program. The main branch is the multidimensional version at equilibrium.
-### Adaptation - branch for testing the effects of a shift in the optimal phenotype (in 1D).
+### OptimumShift - branch for testing the effects of a shift in the optimal phenotype (in 1D).
 ### MutBias - branch for testing the effects of mutational bias (in 1D).
 
-## Notes:
+## Note:
 Unlike the paper, the simulations use the convention the definition of effect size has the difference between the two homozygotes.  
-Code has been adapted to python 3. A python 2.7 version is available upon request.
+The program was adapted to Python 3. A Python 2.7 version is available upon request.  
+Many thanks to Guy Amster for helping write this code.
