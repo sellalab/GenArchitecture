@@ -24,7 +24,6 @@ import os
 # skewZ         :   third moment of the phenotypic distribution
 
 parser = argparse.ArgumentParser(description='Simulate population')
-parser.add_argument('--n', type=int,help="no. of traits",default=1) #keep n=1. MultiD not implemented
 parser.add_argument('--N', type=int,help="population size",default=1000)
 parser.add_argument('--w', type=float,help="selection strength",default=1.0)
 parser.add_argument('--U', type=float,help="mutation rate",default=0.01)
@@ -44,7 +43,7 @@ for mutFact in args.biases:
     N       = args.N
     w       = args.w
     u       = args.U
-    n       = args.n 
+    n       = 1 #Only 1D. MultiD not implemented.
     shape   = args.shape
     scale   = args.scale
     mu = MutationalProcess(u, shape, scale)
