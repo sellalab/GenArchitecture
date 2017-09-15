@@ -74,11 +74,7 @@ for time in range(burnTime+respTime):
         print("Generation no. " + str(time) + " is " + str(time/(N/10.0)) + "%")
 
     # advance one generation
-    pop.nextGen()
-    if time == burnTime:
-        pop.shiftOptimum(shift)
-        pop.setBias(bias)
-    
+    pop.nextGen()    
     
     # once and then, we collect statistics
     if time in sampleTimes:
