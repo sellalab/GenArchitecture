@@ -2,8 +2,7 @@
 ### This is the code for the polygenic trait simulations from Simons et al (2017).
 ### Running:
 Version for running analysis with mutational bias. Here, new mutations are either strongly selected with E(S)=50 or weakly selected with E(S)=0.1. Therefore, the scale parameter is ignored and we introduce a parameter for the proportion of weakly selected new mutations.  simulate.py runs the simulation, population.py includes classes for the population and mutations, and statWriter.py is a class for writing statistics to files.  
-The program can recieve the following parameters:  
---n no. of traits (default=1)  
+The program can recieve the following parameters:    
 --N population size (default=1000)  
 --w selection strength (default=1.0)  
 --U mutation rate per haplotype genome (default=0.01)  
