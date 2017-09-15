@@ -9,9 +9,8 @@ The program can recieve the following parameters:
 --U mutation rate per haplotype genome (default=0.01)  
 --shape shape of gamma distribution of scaled selection coefficients (default=1.0)  
 --scale scale of gamma distribution of scaled selection coefficients (default=10.0)  
---biases list of mutation biases to run (default=[0])  
   
-Example: python simulate.py --n 10 --U 0.1 --shape 10 --scale 2 --biases 0 0.1 0.2  
+Example: python simulate.py --n 10 --U 0.1 --shape 10 --scale 2
 
 ## Branches
 Branches provide variations on the main program. The main branch is the multidimensional version at equilibrium.
