@@ -21,19 +21,13 @@ MutationalProcess = namedtuple('MutationalProcess', 'mu shape scale')
 class Population(object):
     
     #   N : population size
-    def __init__(self, N, w, mu, n, selectionMode):
+    def __init__(self, N, w, mu, selectionMode):
         
         # population size
         self.N = N
-
-        # dimensionality
-        self.n = n        
         
         # set of segregating mutations
         self._segregating = set()
-
-        # set of de-novo mutations
-        self.denovo = set()
         
         # list of mutations carried by each individual of the population:
         # self._individuals[i] is a dictionary representing the genotype of individual i in the population:
@@ -45,10 +39,10 @@ class Population(object):
         self._offspring = [defaultdict(int) for _ in range(self.N)]
                 
         # total fitness effect of fixed mutations in the population
-        self.zf = np.zeros(n)
+        self.zf = 0.0
         
         # initialize fitness optimum as zero
-        self._fitnessOptimum = np.zeros(n)
+        self._fitnessOptimum = 0.0
         
         # selection model paramter
         self._fitnesscoef = 0.5/float(w*w)
@@ -61,9 +55,6 @@ class Population(object):
         
         # segregation update counter
         self._lastUpdate = 0
-
-        # mutation bias
-        self._bias=0
         
         # read selection mode
         if selectionMode == 'parents':
@@ -73,9 +64,6 @@ class Population(object):
             
     def shiftOptimum(self, delta):
         self._fitnessOptimum+= delta
-
-    def setBias(self, bias):
-        self._bias= bias
     
     def nextGen(self):
         
@@ -156,7 +144,7 @@ class Population(object):
         
         z = self._phenotype(indv)  - self._fitnessOptimum
         
-        return math.exp(-np.dot(z,z)*self._fitnesscoef)
+        return math.exp(-z*z*self._fitnesscoef)
 
 
     # get phenotype
@@ -173,9 +161,6 @@ class Population(object):
         
         return z
     
-    def phenotypes(self):
-        return [self._phenotype(self._individuals[i]) for i in range(self.N)]
-
     # sample self._offspring, based on parents fitness
     def _sampleOffspringByParentsFitness(self):
         
@@ -205,7 +190,7 @@ class Population(object):
     # phenotypic variance
     def pheVariance(self):
         phe = np.array([self._phenotype(self._individuals[i]) for i in range(self.N)])
-        return np.var(phe,axis=0)
+        return np.var(phe)
 
 
   
@@ -250,25 +235,19 @@ class Population(object):
                 elif random.getrandbits(1):
                     child[mu] += 1
         
-        #self.denovo.clear()
-
         # add random de-novo mutations:
         # number of de-novo mutations is a poisson variable
         for _ in range(np.random.poisson(2.0*self._mu.mu)):
             
             # the scaled effect size has gamma distribution
             scaledSize = np.random.gamma(self._mu.shape, self._mu.scale)
-            v=np.random.multivariate_normal(np.zeros(self.n),np.identity(self.n))
-            phenoSize  = v*math.sqrt(self._muScalingCoef*scaledSize/np.dot(v,v))
+            phenoSize  = math.sqrt(self._muScalingCoef*scaledSize)
             
             # and its sign is a uniform Bernouli variable
-            if random.random()>(0.5*(1+self._bias)):
+            if random.getrandbits(1):
                 scaledSize = -scaledSize
                 phenoSize  = -phenoSize
-            
-
-            #self.denovo.add(phenoSize)
-
+                
             # we add the mutation to the segregating list and to the new offspring (in heterozygous state)
             mu = Mutation(scaledSize,phenoSize)
             self._segregating.add(mu)

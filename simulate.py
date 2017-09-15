@@ -1,12 +1,8 @@
-import time as zman
-t1=zman.time()
-import argparse
 from population import Mutation, MutationalProcess, Population
 from collections import defaultdict, namedtuple
 from statWriter import statWriter
 from math import sqrt
 import numpy as np
-np.set_printoptions(threshold='nan',linewidth=2500000)
 from scipy.stats import gamma
 import sys
 import os
@@ -21,67 +17,49 @@ import os
 # pheList       :   List of phenotypic values of individuals in the populations.
 # meanZs        :   mean expected genetic value - E(aq)
 # stdZs         :   expected genetic variance - E(a^2 pq/2)
+# frozenlist    :   list of mutations that were segregating before the shift, their effect size and their frequency before the shift and at present
 
 
-parser = argparse.ArgumentParser(description='Simulate population')
-parser.add_argument('--n', type=int,help="no. of traits",default=1)
-parser.add_argument('--N', type=int,help="population size",default=1000)
-parser.add_argument('--w', type=float,help="selection strength",default=1.0)
-parser.add_argument('--U', type=float,help="mutation rate",default=0.01)
-parser.add_argument('--shape', type=float,help="shape",default=1.0)
-parser.add_argument('--biases', type=float,help="biases",default=[0], nargs='+')
-parser.add_argument('--scale', type=float,help="scale",default=10)
-
-
-args=parser.parse_args()
-
-print(args)
 
 # gather several statistics in one run
-for mutFact in args.biases:
+for shftFact in [0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0]:
     # set population with specific mutational and demographic parameters
-    N       = args.N
-    w       = args.w
-    u       = args.U
-    n       = args.n  
-    shape   = args.shape
-    scale   = args.scale
+    N       = 1000
+    w       = 1.0
+    u       = 1.0/100.0 
+    shape   = float(sys.argv[1])
+    scale   = float(sys.argv[2])
     mu = MutationalProcess(u, shape, scale)
-    bias=mutFact
-
     
     fitness = 'parents'
-    pop = Population(N, w, mu,n, fitness)
+    pop = Population(N, w, mu, fitness)
     
     burnTime = 10*N 
-    respTime = 3 
-    shift    = 0
-   
+    respTime = 4003 
+    shift    = float(sys.argv[3])*shftFact
      
  
-    ver = 'mD 1.0'
-    # mD 1.0 multidimensional
-    #/Users/ybs2103/PhD/Python/Adaptation/Results/
-    #/ifs/data/c2b2/gs_lab/shared/ybs2103/Adaptation/results/
-
-    f = statWriter(os.getcwd()+'/results'+str(N),N=N,mu=mu,n=n,w=w,fitness=fitness,burnTime=burnTime,respTime=respTime,shift=shift,ver=ver,bias=bias)
-    sc = 1.0 / float(2*N)
+    ver = '2.2.6'
+    # 2.2.6 list writing + phenotypic variation + lower mutation rate+N=1,000 again
     
-    print(os.getcwd()+'/results')
+    f = statWriter(os.getcwd()+'/results/',N=N,mu=mu,w=w,fitness=fitness,burnTime=burnTime,respTime=respTime,shift=shift,ver=ver)
+    sc = 1.0 / float(2*N)
+       
+    sampleTimes = set([9000]+list(range(10000,10150,10))+list(range(10150,10500,50))+list(range(10500,12000,100))+list(range(12000,14000,250)))
 
-    sampleTimes = set(list(range(0,11*N,N//2)))
-
-    # we advance a total of 20*N generations 
+    # we advance a total of 10*N+4000 generations 
     for time in range(burnTime+respTime):
         
-        if (time % (N/10))==0:
-            print("Generation no. " + str(time) + " is " + str(time/(N/10.0)) + "%")
-
         # advance one generation
         pop.nextGen()
         if time == burnTime:
             pop.shiftOptimum(shift)
-            pop.setBias(bias)
+            pop.freeze()
+            i = 0
+            for mut in pop.frozen():
+                mut.index = i
+                i+= 1
+                #f.write('frozenList','init',mut.index,mut.scaledSize,mut.phenoSize, float(mut.frozenFreq) * sc)
         
         
         # once and then, we collect statistics
@@ -91,39 +69,35 @@ for mutFact in args.biases:
             meanF, stdF = pop.meanFitness()
             f.write('meanF',time,meanF)
             f.write('stdF',time,stdF)
+
             f.write('pheV',time,pop.pheVariance())
+            
             seg = pop.segregating()
             f.write('numSeg',time,len(seg))
             
-            #f.write('zf',time,pop.zf)
+            f.write('zf',time,pop.zf)
             
             # collect statistics on segragating mutations
             meanZs = 0.0
             vsites=0.0
-            if time==10*N:
-                f.write('segList','time',time)
-                #f.write('pheList','time',time)
-                phenos=pop.phenotypes()
-                for phe in  phenos:
-                    f.write('pheList',phe)
-                #for pheno in pop.denovo:
-                #    f.write('denovo',pheno) 
+            f.write('segList','time',time)
             for mut in seg:
                 p = float(mut.frequency) * sc
                 q = 1.0 - p
                 meanZs+= p*mut.phenoSize
                 vsites+= 0.5*(mut.phenoSize**2)*p*q
-                if time==10*N:
-                    f.write('segList',mut.phenoSize, float(mut.frequency) * sc)
-                    
+                f.write('segList',mut.phenoSize, float(mut.frequency) * sc)
+               
+            
+            f.write('meanZs',time,meanZs)
+            f.write('stdZs',time,sqrt(vsites))
 
-            f.write('meanZ',time,pop.zf+meanZs)
-            f.write('stdZs',time,np.sqrt(vsites))
-            f.write('meanZ',time,pop.zf+meanZs)
-            
-            f.write('realTime',time, (zman.time()-t1)/3600)
-            
-            f.flush()
+            if time>burnTime:
+                frozen = pop.frozen()
+                f.write('frozenList','time',time)
+                for mut in frozen:
+                    f.write('frozenList',mut.phenoSize, float(mut.frequency) * sc, float(mut.frozenFreq) * sc, mut.index)
+                    
 
                     
                 
