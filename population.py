@@ -261,11 +261,6 @@ class Population(object):
             v=np.random.multivariate_normal(np.zeros(self.n),np.identity(self.n))
             phenoSize  = v*math.sqrt(self._muScalingCoef*scaledSize/np.dot(v,v))
             
-            # and its sign is a uniform Bernouli variable
-            if random.random()>(0.5*(1+self._bias)):
-                scaledSize = -scaledSize
-                phenoSize  = -phenoSize
-            
 
             #self.denovo.add(phenoSize)
 
