@@ -15,7 +15,7 @@ Example: python simulate.py --n 10 --U 0.1 --shape 10 --scale 2 --biases 0 0.1 0
 
 ## Branches
 Branches provide variations on the main program. The main branch is the multidimensional version at equilibrium.
-### Adaptation - branch for testing the effects of a shift in the optimal phenotype (in 1D).
+### OptimumShift - branch for testing the effects of a shift in the optimal phenotype (in 1D).
 ### MutBias - branch for testing the effects of mutational bias (in 1D).
 
 ## Note:
