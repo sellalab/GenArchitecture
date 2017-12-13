@@ -18,6 +18,6 @@ Branches provide variations on the main program. The main branch is the multidim
 ### MutBias - branch for testing the effects of mutational bias (in 1D).
 
 ## Note:
-Unlike the paper, the simulations use the convention the definition of effect size has the difference between the two homozygotes.  
+Unlike the paper, the simulations use the convention that effect size is the difference between the two homozygotes.  
 The program was adapted to Python 3. A Python 2.7 version is available upon request.  
 Many thanks to Guy Amster for helping write this code.
