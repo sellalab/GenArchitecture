@@ -1,3 +1,6 @@
 [submodule "Notebook"]
 	path = Notebook
 	url = https://github.com/sellalab/GenArchitectureMathematicaNB
+[submodule "Inference"]
+	path = Inference
+	url = https://github.com/sellalab/GenArchitectureInference
