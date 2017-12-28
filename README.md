@@ -12,16 +12,22 @@ The program can recieve the following parameters:
   
 Example: python simulate.py --n 10 --U 0.1 --shape 10 --scale 2
 
+
+
 ## Branches
 Branches provide variations on the main program. The main branch is the multidimensional version at equilibrium.
 ### OptimumShift - branch for testing the effects of a shift in the optimal phenotype (in 1D).
 ### MutBias - branch for testing the effects of mutational bias (in 1D).
+
+
 
 ## Submodules
 Submodules provide additional files for the paper.
 ### Notebook - Provides a Mathematica notebook containing the main derivations and code to reproduce figures 1a, 2, 3 & 4.
 ### Inference - Provides Matlab files for fitting the high-pleiotropy, strong selection model to gwas data. Used to produce figure 5.
 ### Demography - Prodides C++ doce to simulate the SFS under Schiffles & Durbin's MSMC inferred demographic model. Used to produce figure 6.
+
+
 
 ## Note:
 Unlike the paper, the simulations use the convention that effect size is the difference between the two homozygotes. 
