@@ -1,5 +1,5 @@
 # GenArchitecture
-### This is the code for the polygenic trait simulations from Simons et al (2017).
+### This is the code for the polygenic trait simulations from Simons et al (2018).
 ### Running:
 Program runs the full mltidimensional model and consists of three files. simulate.py runs the simulation, population.py includes classes for the population and mutations, and statWriter.py is a class for writing statistics to files.  
 The program can recieve the following parameters:  
