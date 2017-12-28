@@ -1,0 +1,3 @@
+[submodule "Notebook"]
+	path = Notebook
+	url = https://github.com/sellalab/GenArchitectureMathematicaNB
