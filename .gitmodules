@@ -4,3 +4,7 @@
 [submodule "Inference"]
 	path = Inference
 	url = https://github.com/sellalab/GenArchitectureInference
+[submodule "Demography"]
+	path = Demography
+	url = https://github.com/sellalab/ForwardSimulator
+	branch = Simons2018
