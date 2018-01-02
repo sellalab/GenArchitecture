@@ -1,9 +1,0 @@
-creation time : 2017-09-15 14:15:43.212784
-N	: 1000
-mu	: MutationalProcess(mu=0.01, shape=2.0, scale=5.0)
-w	: 1.0
-fitness	: parents
-burnTime	: 10000
-respTime	: 4003
-shift	: 0.06
-ver	: 2.2.6
